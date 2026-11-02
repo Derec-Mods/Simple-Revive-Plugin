@@ -1,0 +1,8 @@
+name: SimpleRevive
+version: '1.0.0.0'
+main: io.github.derexxd.simpleRevive.SimpleRevive
+api-version: '1.21'
+prefix: DerexXD
+authors: [ DerexXD, Hexasan ]
+description: Simple revive by Hexasan but it is the plugin implementation
+website: https://www.derekchen.dev/
