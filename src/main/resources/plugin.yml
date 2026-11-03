@@ -1,8 +1,12 @@
 name: SimpleRevive
 version: "${version}"
 main: io.github.derexxd.simpleRevive.SimpleRevive
-api-version: "1.21"
+api-version: "1.19"
 prefix: DerexXD
 authors: [DerexXD, Hexasan]
 description: Simple revive by Hexasan but it is the plugin implementation
 website: https://www.derekchen.dev/
+commands:
+  simplerevive:
+    description: SimpleRevive admin commands
+    permission: simplerevive.admin

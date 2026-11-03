@@ -18,6 +18,24 @@ import java.util.UUID;
 
 public class DownedSession {
     private static final float[] REVIVE_PITCHES = {0.80f, 0.95f, 1.10f, 1.25f, 1.40f, 1.55f, 1.70f, 1.85f, 2.00f};
+    private static final PotionEffectType JUMP_BOOST_EFFECT = resolveJumpBoost();
+    private static final Particle TOTEM_PARTICLE = resolveTotemParticle();
+
+    private static PotionEffectType resolveJumpBoost() {
+        PotionEffectType type = PotionEffectType.getByName("JUMP_BOOST");
+        if (type != null) {
+            return type;
+        }
+        return PotionEffectType.getByName("JUMP");
+    }
+
+    private static Particle resolveTotemParticle() {
+        try {
+            return Particle.valueOf("TOTEM_OF_UNDYING");
+        } catch (IllegalArgumentException e) {
+            return Particle.valueOf("TOTEM");
+        }
+    }
 
     private final UUID playerId;
     private final TextDisplay display;
@@ -162,7 +180,7 @@ public class DownedSession {
         DownedManager.removeDowned(playerId);
         DownedManager.setCooldown(playerId);
 
-        player.getWorld().spawnParticle(Particle.TOTEM_OF_UNDYING, player.getLocation().add(0, 0.5, 0), 15, 0, 0, 0, 0.5);
+        player.getWorld().spawnParticle(TOTEM_PARTICLE, player.getLocation().add(0, 0.5, 0), 15, 0, 0, 0, 0.5);
         player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1.0f, 1.0f);
 
         if (reviver != null && PluginConfig.hunger > 0) {
@@ -186,7 +204,9 @@ public class DownedSession {
         }
         if (player != null && player.isOnline()) {
             player.removePotionEffect(PotionEffectType.GLOWING);
-            player.removePotionEffect(PotionEffectType.JUMP_BOOST);
+            if (JUMP_BOOST_EFFECT != null) {
+                player.removePotionEffect(JUMP_BOOST_EFFECT);
+            }
             player.setWalkSpeed(0.2f);
             player.setSwimming(false);
         }
@@ -196,7 +216,9 @@ public class DownedSession {
         if (PluginConfig.glow) {
             player.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, Integer.MAX_VALUE, 0, false, false));
         }
-        player.addPotionEffect(new PotionEffect(PotionEffectType.JUMP_BOOST, Integer.MAX_VALUE, 200, false, false));
+        if (JUMP_BOOST_EFFECT != null) {
+            player.addPotionEffect(new PotionEffect(JUMP_BOOST_EFFECT, Integer.MAX_VALUE, 200, false, false));
+        }
         player.setWalkSpeed(0.06f);
     }
 
