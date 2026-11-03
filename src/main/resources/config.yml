@@ -1,40 +1,10 @@
-downed:
-  duration_seconds: 45.0
-  revive_duration_seconds: 4.5
-  cooldown_seconds: 1.0
-  hunger_cost: 6
-  revive_radius: 3.0
-  speed_multiplier: 0.3
-  enable_crawling: true
-  restrict_block_interaction: true
-  restrict_entity_interaction: true
-  glowing: false
-display:
-  mode: "ICONS"
-  numeric_format: "<red>{time_remaining}s</red> <green>{revive_progress}s</green>"
-  height_offset: 1.2
-  revive_pitches:
-    - 0.80
-    - 0.95
-    - 1.10
-    - 1.25
-    - 1.40
-    - 1.55
-    - 1.70
-    - 1.85
-    - 2.00
-mechanics:
-  enable_give_up: true
-  give_up_hold_seconds: 0.8
-  kill_on_disconnect: true
-  require_nearby_teammates: true
-messages:
-  prefix: "<aqua>[Simple Revive]</aqua> "
-  downed_broadcast: "<gray>{player} has been downed</gray>"
-  revived_broadcast: "<gray>{player} was revived by {reviver}</gray>"
-  died_broadcast: "<gray>{player} could not be revived</gray>"
-  combat_log_broadcast: "<gray>{player} tried to leave while downed</gray>"
-  give_up_actionbar: "<white>Look Down and Hold Sneak to Give Up</white>"
-  cooldown_notice: "<dark_gray>You died too quickly to get Downed again</dark_gray>"
-  solo_notice: "<dark_gray>No one was around to revive you</dark_gray>"
-
+downed_time: 45
+reviving_time: 4.5
+cooldown: 1
+hunger: 6
+block: true
+entity: true
+glow: false
+keepinv: true
+crawl: true
+numeric: false
