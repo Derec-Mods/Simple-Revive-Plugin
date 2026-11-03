@@ -8,8 +8,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Shulker;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -35,6 +38,7 @@ public class DownedSession {
 
     private final UUID playerId;
     private final TextDisplay display;
+    private final Shulker shulker;
     private int downedTicksRemaining;
     private int revivingTicks;
     private int giveUpCounter;
@@ -47,12 +51,35 @@ public class DownedSession {
         this.revivingTicks = 0;
         this.giveUpCounter = 0;
 
-        this.display = player.getWorld().spawn(player.getLocation().add(0, 1.2, 0), TextDisplay.class, d -> {
+        double yOffset = PluginConfig.crawl ? 1.1 : 2.2;
+        this.display = player.getWorld().spawn(player.getLocation().add(0, yOffset, 0), TextDisplay.class, d -> {
             d.setBillboard(Display.Billboard.CENTER);
             d.setViewRange(32.0f);
             d.setShadowed(true);
             d.setPersistent(false);
         });
+
+        if (PluginConfig.crawl) {
+            this.shulker = player.getWorld().spawn(player.getLocation().add(0, yOffset, 0), Shulker.class, s -> {
+                s.setAI(false);
+                s.setSilent(true);
+                s.setInvulnerable(true);
+                s.setInvisible(true);
+                s.setPersistent(false);
+                s.setRemoveWhenFarAway(true);
+                try {
+                    Attribute scaleAttr = Attribute.valueOf("GENERIC_SCALE");
+                    AttributeInstance attr = s.getAttribute(scaleAttr);
+                    if (attr != null) {
+                        attr.setBaseValue(0.0625);
+                    }
+                } catch (IllegalArgumentException ignored) {
+                }
+            });
+            this.display.addPassenger(this.shulker);
+        } else {
+            this.shulker = null;
+        }
 
         applyEffects(player);
         player.sendActionBar(Component.text("Look Down and Hold Sneak to Give Up", NamedTextColor.WHITE));
@@ -101,7 +128,8 @@ public class DownedSession {
             downedTicksRemaining--;
         }
 
-        display.teleport(player.getLocation().add(0, 1.2, 0));
+        double yOffset = PluginConfig.crawl ? 1.1 : 2.2;
+        display.teleport(player.getLocation().add(0, yOffset, 0));
         updateDisplay(player, beingRevived);
 
         int targetReviveTicks = (int) (PluginConfig.revivingTime * 10);
@@ -196,6 +224,9 @@ public class DownedSession {
     }
 
     public void cleanup(Player player) {
+        if (shulker != null && shulker.isValid()) {
+            shulker.remove();
+        }
         if (display != null && display.isValid()) {
             display.remove();
         }
