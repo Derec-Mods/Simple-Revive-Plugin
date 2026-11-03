@@ -36,15 +36,6 @@ public class DownedManager {
             return false;
         }
 
-        long teammates = Bukkit.getOnlinePlayers().stream()
-                .filter(p -> !p.equals(player) && (p.getGameMode() == GameMode.SURVIVAL || p.getGameMode() == GameMode.ADVENTURE))
-                .count();
-
-        if (teammates == 0) {
-            player.sendMessage(Component.text("No one was around to revive you", NamedTextColor.DARK_GRAY));
-            return false;
-        }
-
         return true;
     }
 
