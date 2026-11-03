@@ -20,16 +20,13 @@ public class FatalDamageListener implements Listener {
             return;
         }
 
-        if (hasTotem(player)) {
+        if (player.getInventory().getItemInMainHand().getType() == Material.TOTEM_OF_UNDYING
+                || player.getInventory().getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING) {
             return;
         }
 
         if (player.getHealth() - event.getFinalDamage() <= 0) {
-            if (DownedManager.isDowned(player.getUniqueId())) {
-                return;
-            }
-
-            if (!DownedManager.canBeDowned(player)) {
+            if (DownedManager.isDowned(player.getUniqueId()) || !DownedManager.canBeDowned(player)) {
                 return;
             }
 
@@ -37,11 +34,6 @@ public class FatalDamageListener implements Listener {
             player.setHealth(1.0);
             DownedManager.startDowned(player);
         }
-    }
-
-    private static boolean hasTotem(Player player) {
-        return player.getInventory().getItemInMainHand().getType() == Material.TOTEM_OF_UNDYING
-                || player.getInventory().getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING;
     }
 }
 

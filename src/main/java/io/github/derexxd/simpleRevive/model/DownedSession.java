@@ -18,23 +18,19 @@ import java.util.UUID;
 
 public class DownedSession {
     private static final float[] REVIVE_PITCHES = {0.80f, 0.95f, 1.10f, 1.25f, 1.40f, 1.55f, 1.70f, 1.85f, 2.00f};
-    private static final PotionEffectType JUMP_BOOST_EFFECT = resolveJumpBoost();
-    private static final Particle TOTEM_PARTICLE = resolveTotemParticle();
+    private static final PotionEffectType JUMP_BOOST_EFFECT = PotionEffectType.getByName("JUMP_BOOST") != null
+            ? PotionEffectType.getByName("JUMP_BOOST")
+            : PotionEffectType.getByName("JUMP");
+    private static final Particle TOTEM_PARTICLE;
 
-    private static PotionEffectType resolveJumpBoost() {
-        PotionEffectType type = PotionEffectType.getByName("JUMP_BOOST");
-        if (type != null) {
-            return type;
-        }
-        return PotionEffectType.getByName("JUMP");
-    }
-
-    private static Particle resolveTotemParticle() {
+    static {
+        Particle particle;
         try {
-            return Particle.valueOf("TOTEM_OF_UNDYING");
+            particle = Particle.valueOf("TOTEM_OF_UNDYING");
         } catch (IllegalArgumentException e) {
-            return Particle.valueOf("TOTEM");
+            particle = Particle.valueOf("TOTEM");
         }
+        TOTEM_PARTICLE = particle;
     }
 
     private final UUID playerId;
