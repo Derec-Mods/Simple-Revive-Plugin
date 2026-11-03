@@ -55,6 +55,7 @@ public class DownedSession {
             d.setBillboard(Display.Billboard.CENTER);
             d.setViewRange(32.0f);
             d.setShadowed(true);
+            d.setPersistent(false);
         });
 
         applyEffects(player);
@@ -64,7 +65,7 @@ public class DownedSession {
 
     public void tick() {
         Player player = Bukkit.getPlayer(playerId);
-        if (player == null || !player.isOnline()) {
+        if (player == null || !player.isOnline() || player.isDead()) {
             DownedManager.removeDowned(playerId);
             cleanup(player);
             return;
