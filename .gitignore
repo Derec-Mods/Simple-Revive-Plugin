@@ -4,6 +4,7 @@ testing/
 *.iml
 *.ipr
 *.iws
+.vscode/
 
 # IntelliJ
 out/
