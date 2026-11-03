@@ -17,15 +17,21 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.UUID;
 
 public class DownedSession {
+    private static final float[] REVIVE_PITCHES = {0.80f, 0.95f, 1.10f, 1.25f, 1.40f, 1.55f, 1.70f, 1.85f, 2.00f};
+
     private final UUID playerId;
     private final TextDisplay display;
     private int downedTicksRemaining;
     private int revivingTicks;
+    private int giveUpCounter;
+    private int lastRedSegment = 0;
+    private int lastGreenSegment = 0;
 
     public DownedSession(Player player) {
         this.playerId = player.getUniqueId();
         this.downedTicksRemaining = PluginConfig.downedTime * 10;
         this.revivingTicks = 0;
+        this.giveUpCounter = 0;
 
         this.display = player.getWorld().spawn(player.getLocation().add(0, 1.2, 0), TextDisplay.class, d -> {
             d.setBillboard(Display.Billboard.CENTER);
@@ -34,7 +40,8 @@ public class DownedSession {
         });
 
         applyEffects(player);
-        updateDisplay(false);
+        player.sendActionBar(Component.text("Look Down and Hold Sneak to Give Up", NamedTextColor.WHITE));
+        updateDisplay(player, false);
     }
 
     public void tick() {
@@ -55,6 +62,18 @@ public class DownedSession {
             player.setSwimming(true);
         }
 
+        if (player.getLocation().getPitch() >= 89.0f && player.isSneaking()) {
+            giveUpCounter += 2;
+            if (giveUpCounter >= 8) {
+                fail(player);
+                return;
+            }
+        } else {
+            if (giveUpCounter > 0) {
+                giveUpCounter--;
+            }
+        }
+
         Player reviver = findNearestReviver(player);
         boolean beingRevived = reviver != null;
 
@@ -68,7 +87,7 @@ public class DownedSession {
         }
 
         display.teleport(player.getLocation().add(0, 1.2, 0));
-        updateDisplay(beingRevived);
+        updateDisplay(player, beingRevived);
 
         int targetReviveTicks = (int) (PluginConfig.revivingTime * 10);
         if (revivingTicks >= targetReviveTicks) {
@@ -78,16 +97,64 @@ public class DownedSession {
         }
     }
 
-    private void updateDisplay(boolean beingRevived) {
-        Component text;
-        if (beingRevived) {
-            double prog = revivingTicks / 10.0;
-            text = Component.text("❤ Reviving: " + String.format("%.1f", prog) + "s", NamedTextColor.GREEN);
-        } else {
-            double remaining = downedTicksRemaining / 10.0;
-            text = Component.text("☠ Bleeding out: " + String.format("%.1f", remaining) + "s", NamedTextColor.RED);
+    private void updateDisplay(Player player, boolean beingRevived) {
+        if (PluginConfig.numeric) {
+            double remainingSeconds = downedTicksRemaining / 10.0;
+            double progressSeconds = revivingTicks / 10.0;
+            Component text = Component.text(String.format("%.1fs ", remainingSeconds), NamedTextColor.RED)
+                    .append(Component.text(String.format("%.1fs", progressSeconds), NamedTextColor.GREEN));
+            display.text(text);
+            return;
         }
-        display.text(text);
+
+        int totalDowned = PluginConfig.downedTime * 10;
+        int totalRevive = (int) (PluginConfig.revivingTime * 10);
+
+        int redSkulls = 10 - (int) (((double) downedTicksRemaining / totalDowned) * 10);
+        if (redSkulls < 0) {
+            redSkulls = 0;
+        } else if (redSkulls > 10) {
+            redSkulls = 10;
+        }
+
+        int greenHearts = (int) (((double) revivingTicks / totalRevive) * 10);
+        if (greenHearts < 0) {
+            greenHearts = 0;
+        } else if (greenHearts > 10) {
+            greenHearts = 10;
+        }
+
+        if (redSkulls > lastRedSegment) {
+            player.getWorld().playSound(player.getLocation(), Sound.BLOCK_TRIPWIRE_CLICK_ON, 1.0f, 1.7f);
+            lastRedSegment = redSkulls;
+        }
+
+        if (greenHearts > lastGreenSegment && greenHearts >= 1 && greenHearts <= 9) {
+            float pitch = REVIVE_PITCHES[greenHearts - 1];
+            player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1.0f, pitch);
+            lastGreenSegment = greenHearts;
+        }
+
+        Component bar = Component.text("[", beingRevived ? NamedTextColor.GREEN : NamedTextColor.RED);
+
+        for (int i = 0; i < greenHearts; i++) {
+            bar = bar.append(Component.text("\u2764", NamedTextColor.GREEN));
+        }
+
+        int activeSkulls = redSkulls - greenHearts;
+        if (activeSkulls > 0) {
+            for (int i = 0; i < activeSkulls; i++) {
+                bar = bar.append(Component.text("\u2620", beingRevived ? NamedTextColor.DARK_GRAY : NamedTextColor.RED));
+            }
+        }
+
+        int clocks = 10 - Math.max(redSkulls, greenHearts);
+        for (int i = 0; i < clocks; i++) {
+            bar = bar.append(Component.text("\u231A", NamedTextColor.GRAY));
+        }
+
+        bar = bar.append(Component.text("]", beingRevived ? NamedTextColor.GREEN : NamedTextColor.RED));
+        display.text(bar);
     }
 
     private void revive(Player player, Player reviver) {
@@ -161,4 +228,3 @@ public class DownedSession {
         return closest;
     }
 }
-

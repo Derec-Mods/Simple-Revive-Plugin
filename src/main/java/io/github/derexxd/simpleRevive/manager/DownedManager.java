@@ -52,7 +52,11 @@ public class DownedManager {
     }
 
     public static void removeDowned(UUID uuid) {
-        sessions.remove(uuid);
+        DownedSession session = sessions.remove(uuid);
+        if (session != null) {
+            Player player = Bukkit.getPlayer(uuid);
+            session.cleanup(player);
+        }
     }
 
     public static void setCooldown(UUID uuid) {
@@ -77,4 +81,3 @@ public class DownedManager {
         cooldowns.clear();
     }
 }
-
