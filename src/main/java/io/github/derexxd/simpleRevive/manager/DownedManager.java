@@ -6,7 +6,9 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.GameRule;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,6 +49,16 @@ public class DownedManager {
     }
 
     public static void startDowned(Player player) {
+        if (!PluginConfig.keepinv && !Boolean.TRUE.equals(player.getWorld().getGameRuleValue(GameRule.KEEP_INVENTORY))) {
+            for (ItemStack item : player.getInventory().getContents()) {
+                if (item != null && !item.getType().isAir()) {
+                    player.getWorld().dropItemNaturally(player.getLocation(), item);
+                }
+            }
+            player.getInventory().clear();
+            player.getInventory().setArmorContents(null);
+            player.getInventory().setItemInOffHand(null);
+        }
         sessions.put(player.getUniqueId(), new DownedSession(player));
         Bukkit.broadcast(Component.text(player.getName() + " has been downed", NamedTextColor.GRAY));
     }
